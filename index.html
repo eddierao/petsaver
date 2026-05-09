@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetSaver</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f8ff;
+      padding: 16px;
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    .page {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .intro, .card, .submit-card, #confirmation {
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    /* ---- tablet ---- */
+    @media (max-width: 900px) {
+      html, body { height: auto; overflow: auto; }
+      body { display: block; padding: 16px; }
+      .page {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: none;
+        gap: 16px;
+      }
+      .intro, .card, .submit-card, #confirmation {
+        overflow-y: visible;
+        min-height: unset;
+      }
+    }
+
+    /* ---- mobile ---- */
+    @media (max-width: 560px) {
+      body { padding: 12px; }
+      .page {
+        grid-template-columns: 1fr;
+      }
+      .intro .paw { font-size: 28px; }
+      .intro h1 { font-size: 20px; }
+      .card h2, .submit-card h2 { font-size: 15px; }
+      input[type="text"], select, textarea { font-size: 16px; } /* prevents iOS zoom */
+      .field-row { grid-template-columns: 1fr; gap: 0; }
+    }
+
+    /* ---- hero intro ---- */
+    .intro {
+      background: white;
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      text-align: center;
+    }
+
+    .intro .paw {
+      font-size: 36px;
+      margin-bottom: 4px;
+    }
+
+    .intro h1 {
+      font-size: 24px;
+      color: #ff6b35;
+      margin-bottom: 2px;
+    }
+
+    .intro .tagline {
+      color: #888;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .feature-list {
+      text-align: left;
+      background: #fff8f5;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .feature-list p {
+      font-weight: 700;
+      color: #ff6b35;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #444;
+    }
+
+    .feature-item span:first-child {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ---- section cards ---- */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+
+    .card h2 {
+      font-size: 16px;
+      color: #ff6b35;
+      margin-bottom: 2px;
+    }
+
+    .card .section-sub {
+      color: #999;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    /* ---- photo upload box ---- */
+    .photo-box {
+      border: 2px dashed #ff6b35;
+      border-radius: 10px;
+      height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-bottom: 10px;
+      overflow: hidden;
+      position: relative;
+      background: #fff8f5;
+      transition: background 0.2s;
+    }
+
+    .photo-box:hover { background: #fff0ea; }
+
+    .photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-box .upload-hint { pointer-events: none; text-align: center; }
+    .photo-box .upload-hint span { font-size: 22px; display: block; }
+    .photo-box .upload-hint p { color: #ff6b35; font-weight: bold; margin-top: 3px; font-size: 11px; }
+
+    input[type="file"] { display: none; }
+
+    /* ---- form fields ---- */
+    label {
+      display: block;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 2px;
+      margin-top: 8px;
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 4px 2px;
+      border: none;
+      border-bottom: 2px solid #ccc;
+      border-radius: 0;
+      background: transparent;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      border-bottom-color: #ff6b35;
+    }
+
+    textarea {
+      resize: none;
+      height: 48px;
+    }
+
+    /* ---- two-column row ---- */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 16px;
+    }
+
+    /* ---- submit card ---- */
+    .submit-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+
+    .submit-card h2 {
+      font-size: 16px;
+      color: #ff6b35;
+      margin-bottom: 2px;
+    }
+
+    .submit-card .section-sub {
+      color: #999;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .recipients-box {
+      background: #e8f5e9;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #2e7d32;
+    }
+
+    .btn-submit {
+      width: 100%;
+      margin-top: 12px;
+      padding: 11px;
+      background: #ff6b35;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .btn-submit:hover { opacity: 0.92; }
+    .btn-submit:active { transform: scale(0.98); }
+
+    /* ---- confirmation card ---- */
+    #confirmation {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #28a745;
+      color: white;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      opacity: 0.3;
+      filter: grayscale(0.4);
+      transition: opacity 0.4s, filter 0.4s;
+    }
+
+    #confirmation.sent {
+      opacity: 1;
+      filter: none;
+    }
+
+    #confirmation .check { font-size: 40px; margin-bottom: 8px; }
+    #confirmation h2 { font-size: 20px; margin-bottom: 6px; }
+    #confirmation p { font-size: 12px; opacity: 0.9; margin-bottom: 14px; }
+
+    .btn-again {
+      background: white;
+      color: #28a745;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 28px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* ---- celebration screen ---- */
+    #celebrate {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: linear-gradient(135deg, #ff6b35 0%, #ff9a5c 50%, #ffcc44 100%);
+      color: white;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    #celebrate.show { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .celebrate-paws {
+      font-size: 52px;
+      letter-spacing: 8px;
+      margin-bottom: 24px;
+      animation: bounce 1s ease infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-10px); }
+    }
+
+    #celebrate h1 {
+      font-size: 48px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.15);
+    }
+
+    #celebrate .tagline {
+      font-size: 22px;
+      font-weight: 600;
+      opacity: 0.95;
+      margin-bottom: 12px;
+    }
+
+    #celebrate .message {
+      font-size: 16px;
+      opacity: 0.85;
+      max-width: 480px;
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+
+    .celebrate-stats {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.25);
+      border-radius: 16px;
+      padding: 16px 24px;
+      backdrop-filter: blur(6px);
+    }
+
+    .stat-box .stat-icon { font-size: 28px; margin-bottom: 4px; }
+    .stat-box .stat-label { font-size: 13px; opacity: 0.9; }
+
+    .btn-celebrate-again {
+      background: white;
+      color: #ff6b35;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 40px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      transition: transform 0.1s;
+    }
+
+    .btn-celebrate-again:hover { transform: scale(1.03); }
+    .btn-celebrate-again:active { transform: scale(0.97); }
+    /* ---- qr code ---- */
+    .qr-section {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 2px dashed #ffe0d0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .qr-section p {
+      font-size: 10px;
+      color: #aaa;
+    }
+
+    #qrcode canvas, #qrcode img {
+      width: 70px !important;
+      height: 70px !important;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <!-- ========== INTRO ========== -->
+  <div class="intro">
+    <div class="paw">🐾</div>
+    <h1>PetSaver</h1>
+    <p class="tagline">Helping reunite lost pets with their families — fast.</p>
+    <div class="feature-list">
+      <p>Here's what you can do:</p>
+      <div class="feature-item"><span>🐶</span><span><strong>Report a lost pet</strong> — upload a photo, name, and where they were last seen</span></div>
+      <div class="feature-item"><span>🔍</span><span><strong>Post a found pet</strong> — help a stray get home by sharing where you found them</span></div>
+      <div class="feature-item"><span>📋</span><span><strong>Add pet details</strong> — breed, color, size, microchip info, and more</span></div>
+      <div class="feature-item"><span>📧</span><span><strong>Alert the right people</strong> — report goes directly to local shelters and police</span></div>
+    </div>
+    <div class="qr-section">
+      <p>Scan to share this page</p>
+      <div id="qrcode"></div>
+    </div>
+  </div>
+
+  <!-- ========== LOST PET ========== -->
+  <div class="card">
+    <h2>🐶 My Pet Is Lost</h2>
+    <p class="section-sub">Tell us about your pet so we can help find them.</p>
+
+    <div class="photo-box" id="lostPhotoBox" onclick="document.getElementById('lostPhotoInput').click()">
+      <div class="upload-hint" id="lostUploadHint">
+        <span>📷</span>
+        <p>Tap to add a photo</p>
+      </div>
+    </div>
+    <input type="file" id="lostPhotoInput" accept="image/*" />
+
+    <div class="field-row">
+      <div>
+        <label for="petName">Pet's name</label>
+        <input type="text" id="petName" placeholder="e.g. Buddy" />
+      </div>
+      <div>
+        <label for="petType">Type of animal</label>
+        <select id="petType">
+          <option value="">-- choose --</option>
+          <option>Dog</option>
+          <option>Cat</option>
+          <option>Bird</option>
+          <option>Rabbit</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="lastSeen">Where was it last seen?</label>
+    <input type="text" id="lastSeen" placeholder="e.g. Main Street Park" />
+
+    <label for="extraInfo">Anything else to know?</label>
+    <textarea id="extraInfo" placeholder="e.g. brown fur, friendly, wearing a red collar"></textarea>
+  </div>
+
+  <!-- ========== FOUND PET ========== -->
+  <div class="card">
+    <h2>🔍 I Found a Pet</h2>
+    <p class="section-sub">Post a photo and details so the owner can find them.</p>
+
+    <div class="photo-box" id="foundPhotoBox" onclick="document.getElementById('foundPhotoInput').click()">
+      <div class="upload-hint" id="foundUploadHint">
+        <span>📷</span>
+        <p>Tap to add a photo</p>
+      </div>
+    </div>
+    <input type="file" id="foundPhotoInput" accept="image/*" />
+
+    <div class="field-row">
+      <div>
+        <label for="foundPetName">Pet's name (if known)</label>
+        <input type="text" id="foundPetName" placeholder="e.g. Buddy" />
+      </div>
+      <div>
+        <label for="foundPetType">Type of animal</label>
+        <select id="foundPetType">
+          <option value="">-- choose --</option>
+          <option>Dog</option>
+          <option>Cat</option>
+          <option>Bird</option>
+          <option>Rabbit</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="foundWhere">Where did you find it?</label>
+    <input type="text" id="foundWhere" placeholder="e.g. Oak Avenue near the library" />
+
+    <label for="foundInfo">Anything else to know?</label>
+    <textarea id="foundInfo" placeholder="e.g. brown and white, very friendly, has a collar"></textarea>
+  </div>
+
+  <!-- ========== PET DETAILS ========== -->
+  <div class="card">
+    <h2>📋 Pet Details</h2>
+    <p class="section-sub">Small details help identify the pet faster.</p>
+
+    <div class="field-row">
+      <div>
+        <label for="petColor">Fur / feather color</label>
+        <input type="text" id="petColor" placeholder="e.g. golden brown" />
+      </div>
+      <div>
+        <label for="petBreed">Breed (if known)</label>
+        <input type="text" id="petBreed" placeholder="e.g. Tabby, Retriever" />
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div>
+        <label for="petSize">Size</label>
+        <select id="petSize">
+          <option value="">-- choose --</option>
+          <option>Small (under 10 lbs)</option>
+          <option>Medium (10–40 lbs)</option>
+          <option>Large (40–80 lbs)</option>
+          <option>Extra Large (80+ lbs)</option>
+        </select>
+      </div>
+      <div>
+        <label for="petGender">Gender</label>
+        <select id="petGender">
+          <option value="">-- choose --</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Unknown</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div>
+        <label for="petAge">Age</label>
+        <select id="petAge">
+          <option value="">-- choose --</option>
+          <option>Baby / Kitten / Puppy</option>
+          <option>Young (1–3 years)</option>
+          <option>Adult (3–8 years)</option>
+          <option>Senior (8+ years)</option>
+          <option>Unknown</option>
+        </select>
+      </div>
+      <div>
+        <label for="petMicrochip">Microchipped?</label>
+        <select id="petMicrochip">
+          <option value="">-- choose --</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>Unknown</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="petCollar">Collar color &amp; tag info</label>
+    <input type="text" id="petCollar" placeholder="e.g. red collar, tag says 'Max'" />
+
+    <label for="petMarks">Distinguishing marks</label>
+    <input type="text" id="petMarks" placeholder="e.g. scar on left ear, missing front tooth" />
+  </div>
+
+  <!-- ========== SUBMIT ========== -->
+  <div class="submit-card">
+    <h2>📧 Send Report</h2>
+    <p class="section-sub">Describe the situation, then send to shelters and police.</p>
+
+    <label for="reportDescription">Description</label>
+    <textarea id="reportDescription" style="height:100px;" placeholder="Describe the situation in your own words — any extra details that could help find the pet..."></textarea>
+
+    <div class="recipients-box">
+      <strong>Will be sent to:</strong><br>
+      🏠 Local Animal Shelter &nbsp;&bull;&nbsp; 🚔 Police Non-Emergency Line
+    </div>
+
+    <button class="btn-submit" onclick="submit()">Send Report Now 🐾</button>
+  </div>
+
+  <!-- ========== CONFIRMATION ========== -->
+  <div id="confirmation">
+    <div class="check">✅</div>
+    <h2>Report Sent!</h2>
+    <p style="margin-bottom:20px;">Your report has been emailed to the local animal shelter and police non-emergency line. We hope your pet is found soon!</p>
+    <button class="btn-again" onclick="startOver()">Submit Another Report</button>
+  </div>
+
+</div>
+
+<!-- ========== CELEBRATION SCREEN ========== -->
+<div id="celebrate">
+  <div class="celebrate-paws">🐾 🐾 🐾</div>
+  <h1>You're a Hero!</h1>
+  <p class="tagline">Amazing job — you just helped save a pet! 🎉</p>
+  <p class="message">
+    Every report matters. By taking the time to fill this out, you've given a lost pet
+    a real chance of making it home. The shelter and police have been notified
+    and are now on the lookout. You should feel really proud of yourself!
+  </p>
+  <div class="celebrate-stats">
+    <div class="stat-box">
+      <div class="stat-icon">🏠</div>
+      <div class="stat-label">Shelter Alerted</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon">🚔</div>
+      <div class="stat-label">Police Notified</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon">💛</div>
+      <div class="stat-label">Pet Has Hope</div>
+    </div>
+  </div>
+  <button class="btn-celebrate-again" onclick="startOver()">Submit Another Report</button>
+</div>
+
+<script>
+  // --- photo preview ---
+  function setupPhotoPreview(inputId, boxId, hintId) {
+    document.getElementById(inputId).addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const box = document.getElementById(boxId);
+        document.getElementById(hintId).style.display = 'none';
+        const existing = box.querySelector('img');
+        if (existing) existing.remove();
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        box.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  setupPhotoPreview('lostPhotoInput', 'lostPhotoBox', 'lostUploadHint');
+  setupPhotoPreview('foundPhotoInput', 'foundPhotoBox', 'foundUploadHint');
+
+  // --- generate QR code for this page ---
+  new QRCode(document.getElementById('qrcode'), {
+    text: window.location.href,
+    width: 70,
+    height: 70,
+    colorDark: '#ff6b35',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  // --- submit ---
+  function submit() {
+    const lostName   = document.getElementById('petName').value.trim()        || 'Unknown';
+    const lostType   = document.getElementById('petType').value               || 'Unknown';
+    const lostWhere  = document.getElementById('lastSeen').value.trim()       || 'Unknown';
+    const lostExtra  = document.getElementById('extraInfo').value.trim()      || 'None';
+    const foundName  = document.getElementById('foundPetName').value.trim()   || 'Unknown';
+    const foundType  = document.getElementById('foundPetType').value          || 'Unknown';
+    const foundWhere = document.getElementById('foundWhere').value.trim()     || 'Unknown';
+    const foundExtra = document.getElementById('foundInfo').value.trim()      || 'None';
+    const color      = document.getElementById('petColor').value.trim()       || 'Unknown';
+    const breed      = document.getElementById('petBreed').value.trim()       || 'Unknown';
+    const size       = document.getElementById('petSize').value               || 'Unknown';
+    const gender     = document.getElementById('petGender').value             || 'Unknown';
+    const age        = document.getElementById('petAge').value                || 'Unknown';
+    const microchip  = document.getElementById('petMicrochip').value          || 'Unknown';
+    const collar     = document.getElementById('petCollar').value.trim()      || 'Unknown';
+    const marks      = document.getElementById('petMarks').value.trim()       || 'None';
+    const description = document.getElementById('reportDescription').value.trim() || 'None';
+
+    const subject = encodeURIComponent('PetSaver Report – Lost & Found Pet');
+    const body = encodeURIComponent(
+      'PETSAVER REPORT\n================\n\n' +
+      'DESCRIPTION\n' + description + '\n\n' +
+      'LOST PET\n' +
+      'Name: ' + lostName + '\nAnimal: ' + lostType + '\nLast seen: ' + lostWhere + '\nDetails: ' + lostExtra + '\n\n' +
+      'FOUND PET\n' +
+      'Name: ' + foundName + '\nAnimal: ' + foundType + '\nFound at: ' + foundWhere + '\nDetails: ' + foundExtra + '\n\n' +
+      'PET DETAILS\n' +
+      'Color: ' + color + '\nBreed: ' + breed + '\nSize: ' + size + '\nGender: ' + gender +
+      '\nAge: ' + age + '\nMicrochipped: ' + microchip + '\nCollar: ' + collar + '\nMarks: ' + marks + '\n\n' +
+      '-- Sent via PetSaver App --'
+    );
+
+    // Replace with real shelter/police emails for your area
+    const to = 'shelter@localanimalshelter.org,police@localpolice.gov';
+    window.location.href = 'mailto:' + to + '?subject=' + subject + '&body=' + body;
+
+    document.getElementById('confirmation').classList.add('sent');
+    document.getElementById('celebrate').classList.add('show');
+  }
+
+  // --- start over ---
+  function startOver() {
+    ['petName','lastSeen','extraInfo','foundPetName','foundWhere','foundInfo',
+     'petColor','petBreed','petCollar','petMarks','reportDescription'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+    ['petType','foundPetType','petSize','petGender','petAge','petMicrochip'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+
+    ['lostPhotoBox','foundPhotoBox'].forEach(function(boxId) {
+      const box = document.getElementById(boxId);
+      const img = box.querySelector('img');
+      if (img) img.remove();
+    });
+    document.getElementById('lostUploadHint').style.display = '';
+    document.getElementById('foundUploadHint').style.display = '';
+    document.getElementById('confirmation').classList.remove('sent');
+    document.getElementById('celebrate').classList.remove('show');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
